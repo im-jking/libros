@@ -180,3 +180,14 @@ bool BurnBabelImage::run(std::shared_ptr<Application> application) {
     return true;
 #endif
 }
+
+bool LingnanAutoAdvance::run(std::shared_ptr<Application> application) {
+    // if milliseconds since last event > 10000, generate event.
+    unsigned long currentMillis = millis();
+    if (currentMillis > (this->lastMillis + 10000)) {
+        application->generateEvent(FOCUS_EVENT_BUTTON_NEXT, 0);
+        this->lastMillis = currentMillis;
+    }
+
+    return false;
+}

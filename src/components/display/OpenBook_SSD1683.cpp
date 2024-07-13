@@ -276,7 +276,8 @@ void OpenBook_SSD1683::init(OpenBookDisplayMode displayMode) {
   buf[1] = 0x00;
   EPD_command(0x21, buf, 2);
 
-  buf[0] = 0x05;
+  buf[0] = 0x04; // LUT0 (black)
+  // buf[0] = 0x05; // LUT1 (white)
   EPD_command(0x3C, buf, 1); // Set border waveform
 
   buf[0] = 0x2B;

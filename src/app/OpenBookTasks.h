@@ -44,4 +44,12 @@ protected:
     int32_t lastUpdate = -1;
 };
 
+class LingnanAutoAdvance : public Task {
+public:
+    LingnanAutoAdvance() {};
+    bool run(std::shared_ptr<Application> application);
+protected:
+    unsigned long lastMillis = 0;
+};
+
 #endif // OpenBookTasks_h

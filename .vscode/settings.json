@@ -69,6 +69,11 @@
         "arduino.h": "c",
         "openbookdevice.h": "c",
         "iostream": "cpp",
-        "mstd_iterator": "cpp"
+        "mstd_iterator": "cpp",
+        "book_04.c": "cpp",
+        "book_05.c": "cpp",
+        "book_07.c": "cpp",
+        "book_08.c": "cpp",
+        "book_10.c": "cpp"
     },
 }

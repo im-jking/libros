@@ -1,8 +1,8 @@
-#include "OpenBookApplication.h"
+#include "LingnanSlideshowApplication.h"
 #include "OpenBookDatabase.h"
 #include "bitmaps.h"
 
-std::shared_ptr<OpenBookApplication> application(nullptr);
+std::shared_ptr<LingnanSlideshowApplication> application(nullptr);
 std::shared_ptr<Window> window(nullptr);
 
 void setup() {
@@ -14,7 +14,7 @@ void setup() {
     display->display();
 
     window = std::make_shared<Window>(MakeSize(300, 400));
-    application = std::make_shared<OpenBookApplication>(window);
+    application = std::make_shared<LingnanSlideshowApplication>(window);
 }
 
 void loop() {
