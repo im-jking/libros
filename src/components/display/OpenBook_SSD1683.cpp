@@ -130,11 +130,15 @@ void OpenBook_SSD1683::update()
 
   switch (this->currentDisplayMode) {
     case OPEN_BOOK_DISPLAY_MODE_QUICK:
-    case OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL:
-    case OPEN_BOOK_DISPLAY_MODE_PARTIAL:
       buf[0] = 0xC7;
       break;
+    case OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL:
+    case OPEN_BOOK_DISPLAY_MODE_PARTIAL:
+      buf[0] = 0xFF;
+      break;
     case OPEN_BOOK_DISPLAY_MODE_GRAYSCALE:
+      buf[0] = 0xCF;
+      break;
     case OPEN_BOOK_DISPLAY_MODE_DEFAULT:
     default:
       buf[0] = 0xf7;
@@ -302,18 +306,23 @@ void OpenBook_SSD1683::init(OpenBookDisplayMode displayMode) {
 
   switch (displayMode) {
     case OPEN_BOOK_DISPLAY_MODE_QUICK:
-    case OPEN_BOOK_DISPLAY_MODE_PARTIAL:
-    case OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL:
         // TODO: Implement partial refresh modes
-        buf[0] = 0x5a;
+        buf[0] = 0x6e;
         EPD_command(0x1A, buf, 1); // Write to temperature register
         buf[0] = 0x91;
         EPD_command(0x22, buf, 1);
         EPD_command(0x20);
         busy_wait();
         break;
+    case OPEN_BOOK_DISPLAY_MODE_PARTIAL:
+    case OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL:
     case OPEN_BOOK_DISPLAY_MODE_GRAYSCALE:
-        // TODO: Implement grayscale mode
+        buf[0] = 0x5a;
+        EPD_command(0x1A, buf, 1); // Write to temperature register
+        buf[0] = 0x91;
+        EPD_command(0x22, buf, 1);
+        EPD_command(0x20);
+        busy_wait();
         break;
     case OPEN_BOOK_DISPLAY_MODE_DEFAULT:
         // Nothing to do here!
