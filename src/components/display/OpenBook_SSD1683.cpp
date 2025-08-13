@@ -272,11 +272,28 @@ void OpenBook_SSD1683::init(OpenBookDisplayMode displayMode) {
 
   hardwareReset();
 
-  EPD_command(0x12); // SWRESET
+  busy_wait();
+
+  if (displayMode == OPEN_BOOK_DISPLAY_MODE_PARTIAL || displayMode == OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL) {
+    buf[0] = 0x80;
+    EPD_command(0x3c, buf, 1); // Select border
+    buf[0] = 0x00;
+    buf[1] = 0x00;
+    EPD_command(0x21, buf, 2); // Display mode 2
+    buf[0] = 0xc0;
+    EPD_command(0x22, buf, 1); // Enable internal clock osc
+    EPD_command(0x20);
+  } else {
+    EPD_command(0x12); // SWRESET
+  }
 
   busy_wait();
 
-  buf[0] = 0x40;
+  if (displayMode == OPEN_BOOK_DISPLAY_MODE_PARTIAL || displayMode == OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL) {
+    buf[0] = 0x00;
+  } else {
+    buf[0] = 0x40;
+  }
   buf[1] = 0x00;
   EPD_command(0x21, buf, 2);
 
@@ -314,8 +331,8 @@ void OpenBook_SSD1683::init(OpenBookDisplayMode displayMode) {
         EPD_command(0x20);
         busy_wait();
         break;
-    case OPEN_BOOK_DISPLAY_MODE_PARTIAL:
-    case OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL:
+    // case OPEN_BOOK_DISPLAY_MODE_PARTIAL:
+    // case OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL:
     case OPEN_BOOK_DISPLAY_MODE_GRAYSCALE:
         buf[0] = 0x5a;
         EPD_command(0x1A, buf, 1); // Write to temperature register
@@ -348,9 +365,28 @@ void OpenBook_SSD1683::powerDown()
 /**************************************************************************/
 /*!
     @todo Sets the window for partial refresh.
+    @note From Goodisplay's Display_EPD_W21.cpp
 */
 /**************************************************************************/
 void OpenBook_SSD1683::setWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
+  uint16_t x_start = x; //x address start
+	uint16_t x_end = x_start+w-1; //x address end
+	uint16_t y_start = y; //Y address start
+	uint16_t y_end = y_start+h-1; //Y address end
+  
+	EPD_data(x_start);  //x address start
+	EPD_data(x_end);   //x address end   
+
+  EPD_data(y_start%256);  //y address start2 
+	EPD_data(y_start/256); //y address start1 
+	EPD_data(y_end%256);  //y address end2 
+	EPD_data(y_end/256); //y address end1   
+
+	EPD_command(0x4E);        // set RAM x address count to 0;
+	EPD_data(x_start);   //x start address
+	EPD_command(0x4F);      // set RAM y address count to 0X127;    
+	EPD_data(y_start%256);//y address start2
+	EPD_data(y_start/256);//y address start1
 }
 
 /**************************************************************************/
@@ -491,8 +527,59 @@ void OpenBook_SSD1683::displayGrayscale(uint16_t x, uint16_t y, const unsigned c
 */
 /**************************************************************************/
 void OpenBook_SSD1683::displayPartial(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
-  if (this->currentDisplayMode != OPEN_BOOK_DISPLAY_MODE_PARTIAL && this->currentDisplayMode != OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL) this->init(OPEN_BOOK_DISPLAY_MODE_PARTIAL);
-  this->display();
+  if (use_sram) {
+        this->display(); // partial update not yet supported from SRAM.
+    }
+
+    switch (this->getRotation())
+    {
+        case 0:
+            // _swap_int16_t(x, y);
+            // _swap_int16_t(w, h);
+            // y = WIDTH - y - h;
+            break;
+        case 2:
+            _swap_int16_t(x, y);
+            _swap_int16_t(w, h);
+            x = HEIGHT - x - w;
+            break;
+        case 3:
+            // does not work yet
+            x = HEIGHT - x - w;
+            y = WIDTH - y - h;
+            break;
+    }
+
+    // expand window to multiples of 8 on the x-axis:
+    if (x % 8) {
+        w += x % 8;
+        x -= x % 8;
+    }
+    if ((w % 8) > 0) w += 8 - (w % 8);
+
+    // Partial update area out of range. Do a full update instead of hanging.
+    if (x + w > 400 || y + h > 300) {
+        this->update();
+        return;
+    }
+
+    if (this->currentDisplayMode != OPEN_BOOK_DISPLAY_MODE_PARTIAL && this->currentDisplayMode != OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL) this->init(OPEN_BOOK_DISPLAY_MODE_PARTIAL);
+    
+    this->setWindow(x, y, w, h);
+
+    // determine the area of buffer to transfer
+    // we're dealing with bytes now, not pixels
+    x /= 8; 
+    w /= 8;
+    uint16_t buffer_width = HEIGHT / 8;
+
+    this->writeRAMCommand(0);
+    for(uint16_t i = x + buffer_width * y; i < x + w + buffer_width * (y + h); i += buffer_width) {
+        for(uint16_t j = 0; j < w; j++) {
+            EPD_data(buffer1[i + j]);
+        }
+    }
+    this->update();
 }
 
 /**************************************************************************/
