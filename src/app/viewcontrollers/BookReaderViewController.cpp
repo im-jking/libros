@@ -104,7 +104,7 @@ void BookReaderViewController::handleModal(Event event) {
     std::stringstream ss;
     switch (event.type) {
         case FOCUS_EVENT_BUTTON_LEFT:
-            this->currentPage = max(this->currentPage - 10, 0);
+            this->currentPage = max(this->currentPage - 10, (long int)0);
             percentComplete = (float)(this->currentPage) / (float)(this->numPages);
             ss << "Go to page " << this->currentPage + 1;
             this->modalSlider->setProgress(percentComplete);
