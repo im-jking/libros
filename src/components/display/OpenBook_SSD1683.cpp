@@ -130,11 +130,11 @@ void OpenBook_SSD1683::update()
 
   switch (this->currentDisplayMode) {
     case OPEN_BOOK_DISPLAY_MODE_QUICK:
-      buf[0] = 0xC7;
+      buf[0] = 0xD7;
       break;
     case OPEN_BOOK_DISPLAY_MODE_FASTPARTIAL:
     case OPEN_BOOK_DISPLAY_MODE_PARTIAL:
-      buf[0] = 0xFF;
+      buf[0] = 0xFC;
       break;
     case OPEN_BOOK_DISPLAY_MODE_GRAYSCALE:
       buf[0] = 0xCF;
@@ -276,11 +276,12 @@ void OpenBook_SSD1683::init(OpenBookDisplayMode displayMode) {
 
   busy_wait();
 
-  buf[0] = 0x40;
-  buf[1] = 0x00;
-  EPD_command(0x21, buf, 2);
+  // buf[0] = 0x40;
+  // buf[1] = 0x00;
+  // EPD_command(0x21, buf, 2);
 
-  buf[0] = 0x05;
+  // buf[0] = 0x05;
+  buf[0] = 0x01;
   EPD_command(0x3C, buf, 1); // Set border waveform
 
   buf[0] = 0x2B;
