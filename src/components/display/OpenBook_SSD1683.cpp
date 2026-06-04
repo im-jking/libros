@@ -276,11 +276,6 @@ void OpenBook_SSD1683::init(OpenBookDisplayMode displayMode) {
 
   busy_wait();
 
-  // buf[0] = 0x40;
-  // buf[1] = 0x00;
-  // EPD_command(0x21, buf, 2);
-
-  // buf[0] = 0x05;
   buf[0] = 0x01;
   EPD_command(0x3C, buf, 1); // Set border waveform
 
@@ -310,9 +305,6 @@ void OpenBook_SSD1683::init(OpenBookDisplayMode displayMode) {
         // TODO: Implement partial refresh modes
         buf[0] = 0x6e;
         EPD_command(0x1A, buf, 1); // Write to temperature register
-        buf[0] = 0x91;
-        EPD_command(0x22, buf, 1);
-        EPD_command(0x20);
         busy_wait();
         break;
     case OPEN_BOOK_DISPLAY_MODE_PARTIAL:
